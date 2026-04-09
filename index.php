@@ -10,6 +10,8 @@ foreach (glob("controllers/*.php") as $filename) {
 $url = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);    
 $divided_url = explode("/", trim($url, "/"));
 $path = $divided_url[2] ?? "home";
+$additional_info = !empty($divided_url[3]) ? $divided_url[3] : NULL;
+
 
 $dir_backs = "";
 // dependent on how deep your project folder is, change the value of $x if you get too far back/ahead
@@ -24,13 +26,17 @@ $allowed_paths = [
     ],
     "private" => [
         "overview",
-        "my_account",
+        "account",
         "cells",
         "prisoners",
+        "editRoles",
+        "logout",
+        "edit",
     ],
 ];
 
 if (!in_array($path, $allowed_paths["public"], true) && !in_array($path, $allowed_paths["private"], true)) {
+    // tells the browser it cant find the page if the path wasnt found
     http_response_code(404);
     exit;
 }
@@ -49,7 +55,7 @@ if (in_array($path, $allowed_paths["public"], true)) {
     echo "public<br>";
     $controller = new publicController($dir_backs);
     if ($path === "login") {
-        $controller->$path($auth);
+        $controller->login($auth);
     } else {
         $controller->$path();
     }
@@ -62,8 +68,12 @@ if (in_array($path, $allowed_paths["public"], true)) {
     }
     echo "private<br>";
     
-    $controller = new privateController($auth, $path, $db_obj);
-    $controller->$path();
+    $controller = new privateController($auth, $path, $db_obj, $dir_backs);
+    if (!isset($additional_info)) {
+        $controller->$path();
+    } else {
+        $controller->$path($additional_info);
+    }
 
 }
 
@@ -74,6 +84,3 @@ if ($auth->isLoggedIn()) {
     require_once "parts/public_bottom.php";
 }
 
-// tells the browser it cant find the page if the path wasnt found
-http_response_code(404);
-exit;

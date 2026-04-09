@@ -1,1 +1,3 @@
-Lorem ipsum dolor sit amet consectetur, adipisicing elit. Mollitia consequatur aliquam vero possimus earum reiciendis, nam omnis at quam porro culpa dolorem, amet, impedit obcaecati perspiciatis. Est dicta corrupti, tempora dignissimos a amet deserunt dolor illum accusamus perferendis sed consequatur.
+<div class="inside_space colored spaced">gevangenen<a href="prisoners">view</a></div>
+<div class="inside_space colored spaced">cellen<a href="cells">view</a></div>
+<div class="inside_space colored spaced">geschiedenis<a href="">view</a></div>

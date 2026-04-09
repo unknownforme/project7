@@ -17,7 +17,8 @@ class publicController {
             try {
                 $auth->login($_POST['email'], $_POST['password']);
                 echo 'User is logged in';
-                header("location:" . $this->dir_backs . "overview");
+                header("location: " . $this->dir_backs . "overview");
+                exit;
 
             }
             catch (\Delight\Auth\InvalidEmailException $e) {
