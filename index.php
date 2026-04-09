@@ -29,7 +29,9 @@ $allowed_paths = [
         "account",
         "cells",
         "prisoners",
-        "editRoles",
+        "history",
+        "users",
+        "editroles",
         "logout",
         "edit",
     ],
@@ -78,9 +80,4 @@ if (in_array($path, $allowed_paths["public"], true)) {
 }
 
 
-if ($auth->isLoggedIn()) {
-    require_once "parts/private_bottom.php";
-} else {
-    require_once "parts/public_bottom.php";
-}
-
+require_once "parts/bottom.php";

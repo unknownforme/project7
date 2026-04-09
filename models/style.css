@@ -22,6 +22,7 @@ html, body {
     padding: 0 5px;
 }
 
+
 .inside_space {
     display: flex;
     justify-content: space-between;

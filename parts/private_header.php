@@ -14,4 +14,6 @@
         <a class="button_link" href="<?= $dir_backs ?>account">mijn account</a>
     </header>
     
+<?= $outside_element ?? "" ?>
+
     <div id="center">

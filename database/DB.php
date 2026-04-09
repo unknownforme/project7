@@ -12,19 +12,20 @@ class DB {
         );
     }
 
+
+
     public function getAllPrisoners($name = null) {
-        $query = "SELECT * FROM inmate_history WHERE time_to_release > :current_time
+        $query = "SELECT * FROM inmate_history 
             INNER JOIN inmate ON inmate_history.inmate_id = inmate.id
-            INNER JOIN cell ON inmate_history.cell_id = cell.id;";
+            INNER JOIN cell ON inmate_history.cell_id = cell.id
+            WHERE inmate_history.time_to_release > FROM_UNIXTIME(" . time() . ");";
         if (isset($name)) {
             $query .= "WHERE name = :name";
         }
-        $current_time = date ('Y-m-d H:i:s', time());
         $query = $this->dbconn->prepare($query);
         if (isset($name)) {
             $query->bindParam(":name", $name);
         }
-        $query->bindParam(":current_time", $current_time);
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -46,7 +47,10 @@ class DB {
     }
 
     public function getHistory() {
-        $query = $this->dbconn->prepare("SELECT * FROM ");
+        $query = $this->dbconn->prepare("SELECT * FROM inmate_history 
+            INNER JOIN inmate ON inmate_history.inmate_id = inmate.id
+            INNER JOIN cell ON inmate_history.cell_id = cell.id");
+        $query->execute();
     }
 
     public function addPrisonerHistory($cell, $reason, $time_jailed, $time_to_release) {
@@ -69,5 +73,18 @@ class DB {
 
     public function getDbconn() {
         return $this->dbconn;
+    }
+
+    public function getAllUsers() {
+        $query = $this->dbconn->prepare("SELECT id, username FROM users");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function getUser($id) {
+        $query = $this->dbconn->prepare("SELECT id, username FROM users WHERE id = :id");
+        $query->bindParam(":id", $id);
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 }
