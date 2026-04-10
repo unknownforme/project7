@@ -1,4 +1,6 @@
- <table>
+<div class="inside_space colored spaced">voeg gevangene toe<a href="addprisoner">nieuwe gevangene</a></div><br>
+ 
+<table>
     <tr>
         <th>naam</th>
         <th>afdeling</th>
@@ -17,4 +19,4 @@
             <td><a href="edit/<?= $prisoner['id'] ?>">edit</a></td>
         </tr>
     <?php endforeach; ?>
- </table>
+</table>

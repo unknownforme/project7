@@ -34,6 +34,8 @@ $allowed_paths = [
         "editroles",
         "logout",
         "edit",
+        "register",
+        "addprisoner",
     ],
 ];
 
@@ -78,6 +80,5 @@ if (in_array($path, $allowed_paths["public"], true)) {
     }
 
 }
-
 
 require_once "parts/bottom.php";

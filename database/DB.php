@@ -46,10 +46,17 @@ class DB {
         self::addPrisonerHistory($cell, $reason, $time_jailed, $time_to_release);
     }
 
-    public function getHistory() {
-        $query = $this->dbconn->prepare("SELECT * FROM inmate_history 
+    public function getHistory($search = null) {
+        $query = "SELECT * FROM inmate_history 
             INNER JOIN inmate ON inmate_history.inmate_id = inmate.id
-            INNER JOIN cell ON inmate_history.cell_id = cell.id");
+            INNER JOIN cell ON inmate_history.cell_id = cell.id";
+        if (isset($search)) {
+            $query .= "WHERE name = :name";
+        }
+        $query = $this->dbconn->prepare($query);
+        if (isset($search)) {
+            $query->bindParam(":name", $search);
+        }
         $query->execute();
     }
 

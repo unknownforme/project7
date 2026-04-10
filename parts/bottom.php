@@ -1,4 +1,7 @@
 </div>
+
+<?= $outside_element ?? "" ?>
+
 <footer>
 
 </footer>

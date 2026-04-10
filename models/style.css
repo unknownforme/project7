@@ -51,11 +51,11 @@ a {
 
 #center {
     background-color: #5e17eb;
-    height: 70%;
+    min-height: 70%;
     margin: 0 auto;
     margin-top: 5%;
     max-width: 800px;
-    padding: 8px;
+    padding: 14px;
     border-radius: 10px 10px 0 0;
 }
 

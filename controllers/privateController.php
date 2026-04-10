@@ -24,10 +24,14 @@ class privateController {
 
     public function prisoners($search = null) {
         $prisoners = $this->db_obj->getAllPrisoners($search);
-        require_once "models/prisoners.php";
+        require_once "models/prisoners.php";        
     }
 
     public function register() {
+        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+            header("location: " . $this->dir_backs . "home");
+            exit;
+        }
         require_once "models/register.php";
         if ($_SERVER['REQUEST_METHOD'] == "POST") {
             try {
@@ -55,6 +59,10 @@ class privateController {
     public function history($search = null) {
         $history = $this->db_obj->getHistory();
         require_once "models/history.php";   
+    }
+
+    public function addprisoner() {
+        
     }
 
     public function account() {
@@ -89,7 +97,7 @@ class privateController {
     public function editroles($id = null) {
         //the function is before the check, but that doesnt matter as its called after the role check
         function addOrRemoveRole($auth, $id, $role, $remove) {
-            if ($remove == true) {
+            if ($remove == TRUE) {
                 try {
                     $auth->admin()->removeRoleForUserById($id, $role);
                 }
@@ -120,11 +128,12 @@ class privateController {
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
             foreach($roles as $role => $delightrole) {
                 $remove = TRUE;
-                if (in_array($role, $_POST, true)) {
+                if (array_key_exists($role, $_POST)) {
                     $remove = FALSE;
                 }
-                addOrRemoveRole($this->auth, $id, $role, $remove);
+                addOrRemoveRole($this->auth, $id, $delightrole, $remove);
             }    
+            header("location: " . $this->dir_backs . "users");
         }
         $user = $this->db_obj->getUser($id);
         require_once "models/editroles.php";
