@@ -33,9 +33,10 @@ $allowed_paths = [
         "users",
         "editroles",
         "logout",
-        "edit",
+        "editprisoner",
         "register",
         "addprisoner",
+        "addarrest",
     ],
 ];
 

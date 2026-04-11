@@ -17,11 +17,17 @@ html, body {
 
 .spaced {
     line-height: 2.5;
-    margin-top: 30px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     border-radius: 10px;
     padding: 0 5px;
 }
 
+.spacing_between {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
 
 .inside_space {
     display: flex;
@@ -32,8 +38,13 @@ header {
     background-color: #0f23a5;
     height: 13%;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    padding: 0 15px;
+}
+
+#logo {
+    max-height: 100%;
 }
 
 a {
@@ -47,6 +58,34 @@ a {
     background-color: #afc1d0;
     border-radius: 5px;
     line-height: 1.5;
+}
+
+.textinput {
+    width: 75%;
+    padding: 4px;
+} 
+
+.separateditems {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 6px;
+}
+
+.timefield {
+    padding: 4px; 
+}
+
+.submit {  
+    background-color: #07b324;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    padding: 16px 32px;
+    text-decoration: none;
+    margin: 4px 2px;
+    cursor: pointer;
 }
 
 #center {

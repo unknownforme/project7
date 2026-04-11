@@ -13,7 +13,13 @@ class privateController {
         $this->dir_backs = $dir_backs;
     }
 
-    public function edit($id = null) {
+    public function editprisoner($id = null) {
+        //only boss and dev can go here
+        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+            header("location: " . $this->dir_backs . "home");
+            exit;
+        }
+
         if (!isset($id)) {
             header("location: " . $this->dir_backs . "home");
             exit;
@@ -53,6 +59,7 @@ class privateController {
     }
     
     public function cells() {
+
         require_once "models/cells.php";   
     }
     
@@ -62,7 +69,61 @@ class privateController {
     }
 
     public function addprisoner() {
+        //only boss and dev can go here
+        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+            header("location: " . $this->dir_backs . "home");
+            exit;
+        }
+        $list = [
+            "name" => "naam", 
+            "bsn" => "bsn", 
+            "nationality" => "nationaliteit", 
+            "gender" => "gender", 
+            "length" => "lengte", 
+        ];
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $clean_input = [];
+            $clean_input["date"] = filter_input(INPUT_POST, "date", FILTER_SANITIZE_SPECIAL_CHARS);
+
+            foreach ($list as $key => $value) {
+                $clean_input[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
+            }
+            $clean_input['date'] = strtotime($clean_input['date']);
+            $this->db_obj->addPrisoner($clean_input['name'], $clean_input['bsn'], $clean_input['nationality'], $clean_input['gender'], $clean_input['length'], $clean_input['date']);
+        }
         
+        require_once "models/addprisoner.php";
+    }
+
+    public function addarrest() {
+        //only boss and dev can go here
+        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+            header("location: " . $this->dir_backs . "home");
+            exit;
+        }
+
+        $list = [
+            "bsn" => "bsn", 
+            "reason" => "reden", 
+        ];
+
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $cell = filter_input(INPUT_POST, 'cell', FILTER_SANITIZE_SPECIAL_CHARS);
+            $bsn = intval(filter_input(INPUT_POST, 'bsn', FILTER_SANITIZE_SPECIAL_CHARS));
+            $reason = filter_input(INPUT_POST, 'reason', FILTER_SANITIZE_SPECIAL_CHARS);
+            $time_jailed = strtotime(filter_input(INPUT_POST, 'time_jailed', FILTER_SANITIZE_SPECIAL_CHARS));
+            $time_to_release = strtotime(filter_input(INPUT_POST, 'time_to_release', FILTER_SANITIZE_SPECIAL_CHARS));
+
+            if (!isset($bsn, $cell, $reason, $time_jailed, $time_to_release) || $time_jailed > $time_to_release || $bsn == 0) {
+                header("location: " . $this->dir_backs . "overview");
+                exit;
+            }
+            $this->db_obj->addPrisonerHistory($bsn, $cell, $reason, $time_jailed, $time_to_release);
+
+        }
+        $cells = $this->db_obj->getCells(true);
+        require_once "models/addarrest.php";
     }
 
     public function account() {

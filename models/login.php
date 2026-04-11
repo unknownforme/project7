@@ -1,7 +1,11 @@
 <form method="post">
-    <label for="email">email:</label>
-    <input type="text" name="email"><br>
-    <label for="password">wachtwoord:</label>
-    <input type="password" name="password"><br>
+    <div class="separateditems">
+        <label for="email">email:</label>
+        <input class="textinput" type="text" name="email" required>
+    </div>
+    <div class="separateditems">
+        <label for="password">wachtwoord:</label>
+        <input class="textinput" type="password" name="password" required>
+    </div>
     <input type="submit" value="login">
 </form>

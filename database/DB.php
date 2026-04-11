@@ -18,7 +18,7 @@ class DB {
         $query = "SELECT * FROM inmate_history 
             INNER JOIN inmate ON inmate_history.inmate_id = inmate.id
             INNER JOIN cell ON inmate_history.cell_id = cell.id
-            WHERE inmate_history.time_to_release > FROM_UNIXTIME(" . time() . ");";
+            WHERE inmate_history.time_to_release > FROM_UNIXTIME(" . time() . ")";
         if (isset($name)) {
             $query .= "WHERE name = :name";
         }
@@ -30,12 +30,11 @@ class DB {
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public function addPrisoner($name, $cell, $reason, $time_jailed, $time_to_release, $bsn, $nationality, $gender, $length, $date_of_birth) {
-        $query = $this->dbconn->prepare("INSERT INTO inmate (name, reason, bsn-number, nationality, gender, length_cm, date_of_birth) 
-                        VALUES (:name, :reason, :bsn-number, :nationality, :gender, :length, :gender, :date_of_birth)
+    public function addPrisoner($name, $bsn, $nationality, $gender, $length, $date_of_birth) {
+        $query = $this->dbconn->prepare("INSERT INTO inmate (name, bsn-number, nationality, gender, length_cm, date_of_birth) 
+                        VALUES (:name, :bsn-number, :nationality, :gender, :length, :date_of_birth)
                         ON DUPLICATE KEY UPDATE id = id"); //prevents double bsn numbers
         $query->bindParam(":name", $name);
-        $query->bindParam(":reason", $reason);
         $query->bindParam(":bsn-number", $bsn);
         $query->bindParam(":nationality", $nationality);
         $query->bindParam(":gender", $gender);
@@ -43,7 +42,17 @@ class DB {
         $query->bindParam(":date_of_birth", $date_of_birth);
         $query->execute();
         
-        self::addPrisonerHistory($cell, $reason, $time_jailed, $time_to_release);
+        // self::addPrisonerHistory($cell, $reason, $time_jailed, $time_to_release);
+    }
+
+    public function bsnExists($bsn) {
+        $query = $this->dbconn->prepare("SELECT id from inmate WHERE bsn-number = :bsn");
+        $query->bindParam(":bsn", $bsn);
+        $bsn_id = $query->fetch(PDO::FETCH_ASSOC);
+        if (is_int($bsn_id['id'])) {
+            return true;
+        }
+        return false;
     }
 
     public function getHistory($search = null) {
@@ -60,7 +69,34 @@ class DB {
         $query->execute();
     }
 
-    public function addPrisonerHistory($cell, $reason, $time_jailed, $time_to_release) {
+    public function getCells($available = false) {
+        $query = "SELECT * FROM cell";
+        if ($available) {
+            $query .= " WHERE in_use = 0";
+        }
+        $query = $this->dbconn->prepare($query);
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function occupyCell($id) {
+        $id = intval($id);
+        $query = $this->dbconn->prepare("UPDATE table_name
+            SET in_use = 1
+            WHERE id = :id; ");
+        $query->bindParam(":id", $id);
+        $query->execute();
+    }
+
+    public function freeCell($id) {
+        $query = $this->dbconn->prepare("UPDATE table_name
+            SET in_use = 0
+            WHERE id = :id; ");
+        $query->bindParam(":id", intval($id));
+        $query->execute();
+    }
+
+    public function addPrisonerHistory($bsn, $cell, $reason, $time_jailed, $time_to_release) {
         $query = $this->dbconn->prepare("INSERT INTO inmate_history (cell_id, reason, time_jailed, time_to_release) 
                         VALUES (:cell_id, :reason, :time_jailed, :time_to_release)");
             $query->bindParam(":cell_id", $cell);
@@ -68,6 +104,7 @@ class DB {
             $query->bindParam(":time_jailed", $time_jailed);
             $query->bindParam(":time_to_release", $time_to_release);
             $query->execute();
+        self::occupyCell($cell);
     }
 
     public function cipier_checkup($cell, $checkup_info, $date) {

@@ -18,5 +18,5 @@
         <label class="floater" for="<?= $rolename ?>"><?= $rolename ?></label>
         <input class="floater" type="checkbox" name="<?= $rolename ?>" <?= $check ?>><br>
     <?php endforeach; ?>
-    <input type="submit" value="submit">
+    <input class="submit" type="submit" value="submit">
 </form>

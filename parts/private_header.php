@@ -8,10 +8,15 @@
 </head>
 <body>
     <header>
-        <a class="button_link" href="<?= $dir_backs ?>home">home</a>
-        <a class="button_link" href="<?= $dir_backs ?>overview">overview</a>
-        <a class="button_link" href="<?= $dir_backs ?>prisoners">gevangenen</a>
-        <a class="button_link" href="<?= $dir_backs ?>account">mijn account</a>
+            <img id="logo" src="images/afbeelding1.png" alt="logo van bedrijf">
+        <div class="spacing_between"> 
+            <a class="button_link" href="<?= $dir_backs ?>home">home</a>
+            <a class="button_link" href="<?= $dir_backs ?>overview">overview</a>
+            <a class="button_link" href="<?= $dir_backs ?>prisoners">gevangenen</a>
+        </div> 
+        <div>
+            <a class="button_link" href="<?= $dir_backs ?>account">mijn account</a>
+        </div>
     </header>
     
 
