@@ -8,7 +8,7 @@
 </head>
 <body>
     <header>
-            <img id="logo" src="images/afbeelding1.png" alt="logo van bedrijf">
+            <img id="logo" src="<?= $dir_backs ?>images/afbeelding1.png" alt="logo van bedrijf">
         <div class="spacing_between"> 
             <a class="button_link" href="<?= $dir_backs ?>home">home</a>
             <a class="button_link" href="<?= $dir_backs ?>overview">overview</a>

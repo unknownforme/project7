@@ -58,8 +58,9 @@ class privateController {
         }
     }
     
-    public function cells() {
-
+    public function cells($wing = "A") {
+        $wing = (in_array($wing, ["A", "B", "C"])) ? $wing : "A";
+        $cells = $this->db_obj->getCellsAndPrisoners($wing);
         require_once "models/cells.php";   
     }
     

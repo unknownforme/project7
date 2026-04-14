@@ -29,6 +29,19 @@ html, body {
     align-items: center;
 }
 
+.floater {
+    float: left;
+}
+
+.card {
+    height: 120px;
+    width: 21%;
+    background-color: #8656e6;
+    margin: 2%;
+    border-radius: 10px;
+    padding: 8px;
+}
+
 .inside_space {
     display: flex;
     justify-content: space-between;

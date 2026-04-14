@@ -8,8 +8,12 @@
 </head>
 <body>
     <header>
-        <a class="button_link" href="<?= $dir_backs ?>home">home</a>
-        <a class="button_link" href="<?= $dir_backs ?>login">login</a>
+            <img id="logo" src="<?= $dir_backs ?>images/afbeelding1.png" alt="logo van bedrijf">
+        <div class="spacing_between"> 
+        </div> 
+        <div>
+            <a class="button_link" href="<?= $dir_backs ?>login">login</a>
+        </div>
     </header>
 
     <div id="center">
