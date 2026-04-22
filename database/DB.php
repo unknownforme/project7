@@ -12,13 +12,11 @@ class DB {
         );
     }
 
-
-
     public function getAllPrisoners($name = null) {
         $query = "SELECT * FROM inmate_history 
             INNER JOIN inmate ON inmate_history.inmate_id = inmate.id
             INNER JOIN cell ON inmate_history.cell_id = cell.id
-            WHERE inmate_history.time_to_release > FROM_UNIXTIME(" . time() . ")";
+            WHERE inmate_history.time_to_release > (" . time() . ")";
         if (isset($name)) {
             $query .= "WHERE name = :name";
         }
@@ -41,8 +39,6 @@ class DB {
         $query->bindParam(":total_length", $length);
         $query->bindParam(":date_of_birth", $date_of_birth);
         $query->execute();
-        
-        // self::addPrisonerHistory($cell, $reason, $time_jailed, $time_to_release);
     }
 
     public function bsnExists($bsn) {
@@ -62,13 +58,14 @@ class DB {
             INNER JOIN inmate ON inmate_history.inmate_id = inmate.id
             INNER JOIN cell ON inmate_history.cell_id = cell.id";
         if (isset($search)) {
-            $query .= " WHERE name = :name";
+            $query .= " WHERE name LIKE CONCAT('%',:name, '%')";
         }
         $query = $this->dbconn->prepare($query);
         if (isset($search)) {
             $query->bindParam(":name", $search);
         }
         $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getCells($available = false) {
@@ -102,7 +99,7 @@ class DB {
 
     public function occupyCell($id) {
         $id = intval($id);
-        $query = $this->dbconn->prepare("UPDATE cells
+        $query = $this->dbconn->prepare("UPDATE cell
             SET in_use = 1
             WHERE id = :id; ");
         $query->bindParam(":id", $id);
@@ -110,7 +107,7 @@ class DB {
     }
 
     public function freeCell($id) {
-        $query = $this->dbconn->prepare("UPDATE cells
+        $query = $this->dbconn->prepare("UPDATE cell
             SET in_use = 0
             WHERE id = :id; ");
         $query->bindParam(":id", intval($id));
@@ -120,10 +117,8 @@ class DB {
     public function addPrisonerHistory($bsn, $cell, $reason, $time_jailed, $time_to_release) {
         $cell = intval($cell);
         $id = self::getIdByBsn($bsn);
-        $id = time();
-        $query = $this->dbconn->prepare("INSERT INTO inmate_history (id, inmate_id, cell_id, reason, time_jailed, time_to_release) 
-                        VALUES (:id, :inmate_id, :cell_id, :reason, :time_jailed, :time_to_release)");
-            $query->bindParam(":id", $id);
+        $query = $this->dbconn->prepare("INSERT INTO inmate_history (inmate_id, cell_id, reason, time_jailed, time_to_release) 
+                        VALUES (:inmate_id, :cell_id, :reason, :time_jailed, :time_to_release)");
             $query->bindParam(":inmate_id", $id);
             $query->bindParam(":cell_id", $cell);
             $query->bindParam(":reason", $reason);

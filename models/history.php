@@ -1,18 +1,21 @@
+<form method="post">
+    <input class="searchbar" type="text" name="search" placeholder="zoek...">
+    <input class="searchbar_button" type="submit" value="zoek">
+</form>
+ 
  <table>
     <tr>
         <th>naam</th>
-        <th>afdeling</th>
         <th>reden</th>
         <th>gearresteerd op:</th>
         <th>vrijgelaten op:</th>
     </tr>
-    <?php foreach($prisoners as $prisoner): ?>
+    <?php foreach($history as $prisoner): ?>
         <tr>
-            <td><?= $prisoner ?></td>
-            <td><?= $prisoner ?></td>
-            <td><?= $prisoner ?></td>
-            <td><?= $prisoner ?></td>
-            <td><a href="edit/<?= $prisoner['id'] ?>">edit</a></td>
+            <td><?= $prisoner['name'] ?></td>
+            <td><?= $prisoner['reason'] ?></td>
+            <td><?= date('Y-m-d h:i:s',$prisoner['time_jailed']); ?></td>
+            <td><?= date('Y-m-d h:i:s',$prisoner['time_to_release']); ?></td>
         </tr>
     <?php endforeach; ?>
  </table>

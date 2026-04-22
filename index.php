@@ -1,6 +1,8 @@
 <?php 
 require_once __DIR__ . "/database/DB.php";
+require_once __DIR__ . "/functions/error.php";
 require __DIR__ . '/vendor/autoload.php';
+
 $db_obj = new DB();
 $auth = new \Delight\Auth\Auth($db_obj->getDbconn());
 
@@ -36,6 +38,7 @@ $allowed_paths = [
         "editprisoner",
         "register",
         "addprisoner",
+        "updateaccount",
         "addarrest",
     ],
 ];
@@ -54,10 +57,8 @@ if ($auth->isLoggedIn()) {
 }
 
 if (in_array($path, $allowed_paths["public"], true)) {
+    
     //this is publicly reachable
-
-
-    echo "public<br>";
     $controller = new publicController($dir_backs);
     if ($path === "login") {
         $controller->login($auth);
@@ -66,12 +67,12 @@ if (in_array($path, $allowed_paths["public"], true)) {
     }
 
 } elseif (in_array($path, $allowed_paths["private"], true)) {
+    
     //this is only reachable when logged in 
     if (!$auth->isLoggedIn()) {
         header("location:" . $dir_backs . "home");
         exit;
     }
-    echo "private<br>";
     
     $controller = new privateController($auth, $path, $db_obj, $dir_backs);
     if (!isset($additional_info)) {
@@ -82,4 +83,6 @@ if (in_array($path, $allowed_paths["public"], true)) {
 
 }
 
+$error_id = intval(filter_input(INPUT_GET, "error", FILTER_SANITIZE_SPECIAL_CHARS)) ?? null;
+$outside_element = error($error_id);
 require_once "parts/bottom.php";

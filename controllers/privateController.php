@@ -24,22 +24,31 @@ class privateController {
             header("location: " . $this->dir_backs . "home");
             exit;
         }
-        require_once "models/edit.php";
+        require_once "models/editprisoner.php";
     }
 
 
     public function prisoners($search = null) {
         $prisoners = $this->db_obj->getAllPrisoners($search);
-        require_once "models/prisoners.php";        
+        require_once "models/prisoners.php"; 
     }
 
     public function register() {
+        $last_email = filter_input(INPUT_GET, "email", FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
+        $last_username = filter_input(INPUT_GET, "username", FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
+
         if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
             header("location: " . $this->dir_backs . "home");
             exit;
         }
-        require_once "models/register.php";
         if ($_SERVER['REQUEST_METHOD'] == "POST") {
+            if (strlen($_POST['password']) < 8 || $_POST['password'] == strtolower($_POST['password'])) {
+                $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_SPECIAL_CHARS);
+                $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
+                echo "your account was shorter than 8 characters or didnt contain an uppercase character";
+                header("location: register?email=" . $email . "&username=" . $username . "&error=1");
+                exit;
+            }
             try {
                 $userId = $this->auth->register($_POST['email'], $_POST['password'], $_POST['username']);
             }
@@ -56,6 +65,68 @@ class privateController {
                 die('Too many requests');
             }
         }
+        require_once "models/register.php";
+    }
+
+    public function updateaccount() {
+        require_once "models/register.php";
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $password = filter_input(INPUT_POST, "password", FILTER_SANITIZE_SPECIAL_CHARS);
+            $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_SPECIAL_CHARS);
+            $username = filter_input(INPUT_POST, "username", FILTER_SANITIZE_SPECIAL_CHARS);
+
+            if (!empty($password)) {
+                try {
+                    $this->auth->changePasswordWithoutOldPassword($password);
+                    echo 'Password has been changed';
+                }
+                catch (\Delight\Auth\NotLoggedInException $e) {
+                    die('Not logged in');
+                }
+                catch (\Delight\Auth\InvalidPasswordException $e) {
+                    die('Invalid password(s)');
+                }
+                catch (\Delight\Auth\TooManyRequestsException $e) {
+                    die('Too many requests');
+                }
+            }
+
+            if (!empty($email)) {
+                try {
+                    $auth->changeEmail($email);
+                }
+                catch (\Delight\Auth\InvalidEmailException $e) {
+                    die('Invalid email address');
+                }
+                catch (\Delight\Auth\UserAlreadyExistsException $e) {
+                    die('Email address already exists');
+                }
+                catch (\Delight\Auth\EmailNotVerifiedException $e) {
+                    die('Account not verified');
+                }
+                catch (\Delight\Auth\NotLoggedInException $e) {
+                    die('Not logged in');
+                }
+                catch (\Delight\Auth\TooManyRequestsException $e) {
+                    die('Too many requests');
+                }
+            }
+
+            if (!empty($username)) {
+                try {
+                    $auth->changeUsername($username);
+
+                    echo 'Username has been changed';
+                }
+                catch (\Delight\Auth\NotLoggedInException $e) {
+                    die('Not logged in');
+                }
+                catch (\Delight\Auth\TooManyRequestsException $e) {
+                    die('Too many requests');
+                }
+            }
+        }
+
     }
     
     public function cells($wing = "A") {
@@ -65,7 +136,15 @@ class privateController {
     }
     
     public function history($search = null) {
-        $history = $this->db_obj->getHistory();
+        $history = $this->db_obj->getHistory($search);
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            if (empty($_POST['search'])) {
+                header("location: " . $this->dir_backs . "history");
+                exit;
+            }
+            header("location: " . $this->dir_backs . "history/" . $_POST['search']);
+            exit;
+        }
         require_once "models/history.php";   
     }
 
@@ -133,6 +212,11 @@ class privateController {
         $email = $this->auth->getEmail();
 
         require_once "models/account.php";
+    }
+
+    public function bevrijdcel() {
+        
+        require_once "models/freecel.php";
     }
 
     public function logout() {

@@ -1,4 +1,5 @@
- <table>
+<div class="inside_space colored spaced">nieuw account<a href="register">view</a></div>
+<table>
     <tr>
         <th>naam</th>
         <th>aanpassen</th>
@@ -9,4 +10,4 @@
             <td><a href="editroles/<?= $user['id'] ?>">edit</a></td>
         </tr>
     <?php endforeach; ?>
- </table>
+</table>
