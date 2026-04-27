@@ -12,6 +12,7 @@ class publicController {
     }
 
     public function login($auth) {
+        $last_email = filter_input(INPUT_GET, "email", FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
         require_once "models/login.php";
         if ($_SERVER['REQUEST_METHOD'] == "POST") {
             try {
@@ -21,14 +22,10 @@ class publicController {
                 exit;
 
             }
-            catch (\Delight\Auth\InvalidEmailException $e) {
-                die('Wrong email address');
-            }
-            catch (\Delight\Auth\InvalidPasswordException $e) {
-                die('Wrong password');
-            }
-            catch (\Delight\Auth\EmailNotVerifiedException $e) {
-                die('Email not verified');
+            catch (\Delight\Auth\EmailNotVerifiedException | \Delight\Auth\InvalidPasswordException | \Delight\Auth\InvalidEmailException $e) {
+                $email = filter_input(INPUT_POST, "email", FILTER_SANITIZE_SPECIAL_CHARS);
+                header("location: login?error=2&email=" . $email);
+                exit();
             }
             catch (\Delight\Auth\TooManyRequestsException $e) {
                 die('Too many requests');

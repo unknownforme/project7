@@ -132,6 +132,28 @@ a {
     text-align: left;
 }
 
+.option_block {
+    padding: 8px;
+    background-color: #e7e7e7;
+    flex-grow: 1;
+    margin-bottom: 8px;
+    border-radius: 0 0 8px 8px;
+}
+
+#options_container {
+    display: flex;
+}
+
+#list_container {
+    margin: 0 1%;
+    overflow-y: scroll;
+    height: 250px;
+    width: 98%;
+    padding: 8px;
+    border-radius: 8px;
+    background-color: white;
+}
+
 #center {
     background-color: #5e17eb;
     min-height: 70%;

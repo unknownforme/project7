@@ -29,7 +29,8 @@ class privateController {
 
 
     public function prisoners($search = null) {
-        $prisoners = $this->db_obj->getAllPrisoners($search);
+        $prisoner_status = filter_input(INPUT_GET, "arrest_status", FILTER_SANITIZE_SPECIAL_CHARS) ?? "arrested";
+        $prisoners = $this->db_obj->getAllPrisoners($search, $prisoner_status);
         require_once "models/prisoners.php"; 
     }
 

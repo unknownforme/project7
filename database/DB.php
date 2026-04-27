@@ -12,11 +12,14 @@ class DB {
         );
     }
 
-    public function getAllPrisoners($name = null) {
+    public function getAllPrisoners($name = null, $arrest_status = "arrested") {
         $query = "SELECT * FROM inmate_history 
             INNER JOIN inmate ON inmate_history.inmate_id = inmate.id
             INNER JOIN cell ON inmate_history.cell_id = cell.id
-            WHERE inmate_history.time_to_release > (" . time() . ")";
+            WHERE inmate_history.currently_jailed = 1 ";
+        if ($arrest_status == "free") {
+            $query .= " ";
+        }
         if (isset($name)) {
             $query .= "WHERE name = :name";
         }
@@ -39,7 +42,7 @@ class DB {
         $query->bindParam(":total_length", $length);
         $query->bindParam(":date_of_birth", $date_of_birth);
         $query->execute();
-    }
+}
 
     public function bsnExists($bsn) {
         $query = $this->dbconn->prepare("SELECT id from inmate WHERE bsn-number = :bsn");
@@ -49,9 +52,7 @@ class DB {
             return true;
         }
         return false;
-    }
-
-    
+    }  
 
     public function getHistory($search = null) {
         $query = "SELECT * FROM inmate_history 
