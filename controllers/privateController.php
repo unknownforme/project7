@@ -1,4 +1,5 @@
 <?php 
+
 class privateController {
 
     private $auth;
@@ -13,22 +14,131 @@ class privateController {
         $this->dir_backs = $dir_backs;
     }
 
-    public function editprisoner($id = null) {
-        //only boss and dev can go here
-        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
-            header("location: " . $this->dir_backs . "home");
-            exit;
-        }
-
+    public function prisonerdossier($id = null) {
         if (!isset($id)) {
             header("location: " . $this->dir_backs . "home");
             exit;
         }
-        require_once "models/editprisoner.php";
+
+        $is_jailed = $this->db_obj->isCurrentlyJailed($id);
+
+        $list = [
+            "name" => "naam", 
+            "bsn" => "bsn", 
+            "nationality" => "nationaliteit", 
+            "gender" => "gender", 
+            "length" => "lengte", 
+        ];
+        $type_request = filter_input(INPUT_GET, "edit", FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
+        if (!empty($type_request)) {
+            if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+                header("location: " . $this->dir_backs . "prisonerdossier/$id"); 
+                exit;
+            }
+        }
+
+        
+        if ($_SERVER["REQUEST_METHOD"] === "POST" && !empty($type_request)) {
+            $clean_input = [];
+            $clean_input["date"] = filter_input(INPUT_POST, "date", FILTER_SANITIZE_SPECIAL_CHARS);
+
+            foreach ($list as $key => $value) {
+                $clean_input[$key] = filter_input(INPUT_POST, $key, FILTER_SANITIZE_SPECIAL_CHARS);
+            }
+            $clean_input['date'] = strtotime($clean_input['date']);
+            $this->db_obj->updatePrisoner($id, $clean_input['name'], $clean_input['bsn'], $clean_input['nationality'], $clean_input['gender'], $clean_input['length'], $clean_input['date']);
+            header("location: " . $this->dir_backs . "prisonerdossier/" . $id);
+            exit;
+        } 
+
+        $prisoner_info = $this->db_obj->getPrisoner($id);
+        $prisoner_info['date_of_birth'] = explode(" ", $prisoner_info['date_of_birth']);
+        $prisoner_info['date_of_birth'] = $prisoner_info['date_of_birth'][0];
+        $prisoner_history = $this->db_obj->getPrisonerArrests($id);
+        require_once "models/prisonerdossier.php";
     }
 
+    public function prisonerinfo($id) {
+        $is_jailed = $this->db_obj->isCurrentlyJailed($id);
+        require_once "models/prisonerinfo.php";
+        var_dump($this->db_obj->getCellByPrisonerId($id));
+    }
+
+    public function checkups() {
+        require_once "models/checkups.php";
+    }
+
+    public function addcheckup() {
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            $date = intval(filter_input(INPUT_POST, "date", FILTER_SANITIZE_SPECIAL_CHARS));
+            $info = intval(filter_input(INPUT_POST, "info", FILTER_SANITIZE_SPECIAL_CHARS));
+            $prisoner_id = intval(filter_input(INPUT_POST, "prisoner_id", FILTER_SANITIZE_SPECIAL_CHARS));
+            
+        }
+        require_once "models/addcheckup.php";
+    }
+
+    public function cipierrequests() {
+        //move is 0, free is 1
+        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+            header("location: " . $this->dir_backs . "home?error=3");
+            exit;
+        }
+        $id = filter_input(INPUT_GET, "id", FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
+        if (isset($id)) {
+            $this->db_obj->fullfillRequest($id);
+            header("location: " . $this->dir_backs . "cipierrequests");
+            exit;
+        }
+        $all_requests = $this->db_obj->getAllRequests();
+        require_once "models/cipierrequests.php";
+    }
+
+    public function moveprisoner ($id) {
+        if (!isset($id)) {
+            header("location: " . $this->dir_backs . "home");
+            exit;
+        }
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            // move prisoner
+            $cell_id = intval(filter_input(INPUT_POST, "cell", FILTER_SANITIZE_SPECIAL_CHARS));
+            if ($this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+                $this->db_obj->movePrisoner($id, $cell_id);
+            } else {
+                // TODO: a cipier request
+                $this->db_obj->addRequest(1, $id, $cell_id);
+            }
+            header("location: " . $this->dir_backs . "prisonerdossier/" . $id);
+            exit;
+        }
+        $cells = $this->db_obj->getCells(true);
+        require_once "models/moveprisoner.php";
+    }
+
+    public function freeprisoner($id) {
+        if (!isset($id)) {
+            header("location: " . $this->dir_backs . "home");
+            exit;
+        }
+        if ($_SERVER["REQUEST_METHOD"] === "POST") {
+            // free prisoner
+            if ($this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+                $this->db_obj->freePrisoner($id);
+            } else {
+                // TODO: a cipier request
+                $this->db_obj->addRequest(0, $id);
+            }
+            header("location: " . $this->dir_backs . "prisonerdossier/" . $id);
+            exit;
+        }
+        require_once "models/freeprisoner.php";
+    }
 
     public function prisoners($search = null) {
+        if ($_SERVER['REQUEST_METHOD'] == "POST") {
+            $status = filter_input(INPUT_POST, "arrest_status", FILTER_SANITIZE_SPECIAL_CHARS);
+            header("location: ". $this->dir_backs ."prisoners?arrest_status=" . $status);
+        }
         $prisoner_status = filter_input(INPUT_GET, "arrest_status", FILTER_SANITIZE_SPECIAL_CHARS) ?? "arrested";
         $prisoners = $this->db_obj->getAllPrisoners($search, $prisoner_status);
         require_once "models/prisoners.php"; 
@@ -231,7 +341,7 @@ class privateController {
     }
 
     public function users() {
-        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::ADMIN)) {
             header("location: home");
             exit;
         }
@@ -267,7 +377,7 @@ class privateController {
         ];
         
         //only boss and dev can go here
-        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::DIRECTOR, \Delight\Auth\Role::ADMIN)) {
+        if (!$this->auth->hasAnyRole(\Delight\Auth\Role::ADMIN)) {
             header("location: " . $this->dir_backs . "home");
             exit;
         }

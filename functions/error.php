@@ -9,6 +9,9 @@ function error($error_id = null) {
         case 2:
             $error_message = "wachtwoord verkeerd of mail niet verbonden met een account";
         break;
+        case 3:
+            $error_message = "geen toegang";
+        break;
         default:
             $error_message = "unknown error";
         break;
