@@ -1,22 +1,18 @@
 <div class="inside_space colored spaced">voeg notitie toe<a href="addcheckup">nieuwe notitie</a></div>
 
 <div id="list_container">
-    <?php if (!empty($prisoner_history)): ?>
+    <?php if (!empty($notes)): ?>
     <table>
         <tr>
-            <th>afdeling</th>
-            <th>cel</th>
-            <th>reden</th>
-            <th>arrestatie</th>
-            <th>vrijlating</th>
+            <th>informatie</th>
+            <th>datum</th>
+            <th>gevangene</th>
         </tr>
-        <?php foreach($prisoner_history as $prisoner): ?>
+        <?php foreach($notes as $note): ?>
             <tr>
-                <td><?= $prisoner['vleugel'] ?></td>
-                <td><?= $prisoner['cell_id'] ?></td>
-                <td class="align_left"><?= $prisoner['reason'] ?></td>
-                <td><?= date('Y-m-d h:i:s', $prisoner['time_jailed']) ?></td>
-                <td><?= date('Y-m-d h:i:s', $prisoner['time_to_release']) ?></td>
+                <td><?= $note['checkup_info'] ?></td>
+                <td><?= date('Y-m-d h:i:s', $note['date']) ?></td>
+                <td><?= $this->db_obj->getPrisonerNameById($note['prisoner_id']) ?></td>
             </tr>
         <?php endforeach; ?>
     </table>

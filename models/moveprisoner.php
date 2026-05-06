@@ -5,7 +5,7 @@
     <select name="cell" class="timefield">
         <?php foreach($cells as $cell): 
             if ($cell['in_use'] == 0) :?> 
-                <option value="<?= $cell['id'] ?>"><?= $cell['id'] . " vleugel: " . $cell['vleugel'] ?></option>
+                <option value="<?= $cell['id'] ?>"><?= " vleugel: " . $cell['vleugel'] . " id: " . $cell['cell_nr'] ?></option>
             <?php endif;
         endforeach; ?>
     </select>

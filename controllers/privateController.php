@@ -61,19 +61,22 @@ class privateController {
     public function prisonerinfo($id) {
         $is_jailed = $this->db_obj->isCurrentlyJailed($id);
         require_once "models/prisonerinfo.php";
-        var_dump($this->db_obj->getCellByPrisonerId($id));
     }
 
     public function checkups() {
+        $notes = $this->db_obj->getAllNotes();
         require_once "models/checkups.php";
     }
 
     public function addcheckup() {
+        $prisoners = $this->db_obj->getAllPrisoners(null, "not free");
         if ($_SERVER["REQUEST_METHOD"] === "POST") {
-            $date = intval(filter_input(INPUT_POST, "date", FILTER_SANITIZE_SPECIAL_CHARS));
-            $info = intval(filter_input(INPUT_POST, "info", FILTER_SANITIZE_SPECIAL_CHARS));
+            $date = time();
+            $info = (filter_input(INPUT_POST, "info", FILTER_SANITIZE_SPECIAL_CHARS));
             $prisoner_id = intval(filter_input(INPUT_POST, "prisoner_id", FILTER_SANITIZE_SPECIAL_CHARS));
-            
+            $this->db_obj->addNote($date, $info, $prisoner_id);
+            header("location: " . $this->dir_backs . "checkups");
+            exit;
         }
         require_once "models/addcheckup.php";
     }
@@ -85,8 +88,14 @@ class privateController {
             exit;
         }
         $id = filter_input(INPUT_GET, "id", FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
+        $delete_id = filter_input(INPUT_GET, "delete_id", FILTER_SANITIZE_SPECIAL_CHARS) ?? null;
         if (isset($id)) {
             $this->db_obj->fullfillRequest($id);
+            header("location: " . $this->dir_backs . "cipierrequests");
+            exit;
+        }
+        if (isset($delete_id)) {
+            $this->db_obj->deleteRequest($delete_id);
             header("location: " . $this->dir_backs . "cipierrequests");
             exit;
         }
@@ -126,7 +135,7 @@ class privateController {
                 $this->db_obj->freePrisoner($id);
             } else {
                 // TODO: a cipier request
-                $this->db_obj->addRequest(0, $id);
+                $this->db_obj->addRequest(1, $id);
             }
             header("location: " . $this->dir_backs . "prisonerdossier/" . $id);
             exit;
@@ -307,9 +316,14 @@ class privateController {
             $time_to_release = strtotime(filter_input(INPUT_POST, 'time_to_release', FILTER_SANITIZE_SPECIAL_CHARS));
 
             if (!isset($bsn, $cell, $reason, $time_jailed, $time_to_release) || $time_jailed > $time_to_release || $bsn == 0) {
-                header("location: " . $this->dir_backs . "overview");
+                header("location: " . $this->dir_backs . "addarrest?error=4");
                 exit;
             }
+            if ($this->db_obj->isPersonInJail($bsn)) {
+                header("location: " . $this->dir_backs . "addarrest?error=5");
+                exit;
+            }
+            exit;
             $this->db_obj->addPrisonerHistory($bsn, $cell, $reason, $time_jailed, $time_to_release);
 
         }

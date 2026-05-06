@@ -12,6 +12,12 @@ function error($error_id = null) {
         case 3:
             $error_message = "geen toegang";
         break;
+        case 4:
+            $error_message = "onvoldoende gegevens";
+        break;
+        case 5:
+            $error_message = "persoon is al opgesloten";
+        break;
         default:
             $error_message = "unknown error";
         break;

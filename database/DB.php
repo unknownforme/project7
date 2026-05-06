@@ -93,6 +93,7 @@ class DB {
         if ($available) {
             $query .= " WHERE in_use = 0";
         }
+        $query .= " ORDER BY vleugel, cell_nr";
         $query = $this->dbconn->prepare($query);
 
         $query->execute();
@@ -104,7 +105,7 @@ class DB {
             SELECT inmate_id, cell_id, cell.id, in_use, name
             FROM inmate_history
             JOIN inmate on inmate_history.cell_id = inmate.id
-            RIGHT JOIN cell ON inmate_history.cell_id = cell.id";
+            RIGHT JOIN cell ON inmate_history.cell_id = cell.id ";
         if (isset($wing)) {
             $query .= " WHERE vleugel = :wing";
         }
@@ -151,13 +152,16 @@ class DB {
         $query->bindParam(":inmate_id", $id);
         $query->execute();
         $cell_id = $query->fetch();
+        if (empty($cell_id)){
+            return null;
+        }
         $cell_id = $cell_id['cell_id'];
         return $cell_id;
     }
 
     public function getPrisonerNameById($id) {
         $query = $this->dbconn->prepare("SELECT name from inmate WHERE id = :inmate_id");
-        $query->bindParam(":inmate_id", $id);
+        $query->bindParam(":inmate_id", $id, PDO::PARAM_INT);
         $query->execute();
         $cell_id = $query->fetch();
         $cell_id = $cell_id['name'];
@@ -192,15 +196,25 @@ class DB {
         //check if they got a note for today, and if they dont return them as todo
     }
 
-    public function addNote() {
-        $query = $this->dbconn->prepare("INSERT INTO inmate (`date`, checkup_info, prisoner_id) 
-                VALUES (:name, :bsn, :nationality)");
+    public function addNote($time, $info, $prisoner_id) {
+        $query = $this->dbconn->prepare("INSERT INTO cipier_checkup (`date`, checkup_info, prisoner_id) 
+                VALUES (:date, :checkup_info, :prisoner_id)");
+        $query->bindParam(":date", $time, PDO::PARAM_INT);
+        $query->bindParam(":checkup_info", $info);
+        $query->bindParam(":prisoner_id", $prisoner_id, PDO::PARAM_INT);
+        $query->execute();
     }
 
     public function getAllNotes() {
-        $query = $this->dbconn->prepare("SELECT * from cipier_checkups");
+        $query = $this->dbconn->prepare("SELECT * from cipier_checkup");
         $query->execute();
-        $query->fetchAll(PDO::FETCH_ASSOC);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function deleteAllRequestsByPrisonerId($id) {
+        $query = $this->dbconn->prepare("DELETE FROM cipier_requests WHERE prisoner_id = :id");
+        $query->bindParam(":id", $id, PDO::PARAM_INT);
+        $query->execute();
     }
 
     public function getAllRequests() {
@@ -220,8 +234,7 @@ class DB {
         } else {
             $this->freePrisoner($info['prisoner_id']);
         }
-        //todo
-        $this->deleteRequest($id);
+        $this->deleteAllRequestsByPrisonerId($id);
     }
 
     public function deleteRequest($id) {
@@ -236,6 +249,7 @@ class DB {
             SET currently_jailed = 0 WHERE inmate_id = :id");
         $query->bindParam(":id", $id);
         $query->execute();
+        $this->deleteAllRequestsByPrisonerId($id);
     }
 
     public function movePrisoner($prisoner_id, $cell_id) {
@@ -246,6 +260,7 @@ class DB {
         $query->bindParam(":cell_id", $cell_id);
         $query->bindParam(":id", $prisoner_id);
         $query->execute();
+        $this->deleteAllRequestsByPrisonerId($prisoner_id);
     }
 
     public function occupyCell($id) {
@@ -286,8 +301,19 @@ class DB {
         $query->bindParam(":bsn", $bsn, PDO::PARAM_INT);
         $query->execute();
         $info = $query->fetch(PDO::FETCH_ASSOC);
-        
         return $info['id'];
+    }
+
+    public function isPersonInJail($bsn) {
+        $id = $this->getIdByBsn($bsn);
+        $query = $this->dbconn->prepare("SELECT * FROM inmate_history WHERE inmate_id = :id AND currently_jailed = 1");
+        $query->bindParam(":id", $id);
+        $query->execute();
+        $thing = $query->fetchAll(PDO::FETCH_ASSOC);
+        if (empty($thing)) {
+            return false;
+        }
+        return true;
     }
 
     public function cipier_checkup($cell, $checkup_info, $date) {
